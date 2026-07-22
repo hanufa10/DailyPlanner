@@ -1,120 +1,67 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { login } from "../services/authService";
+import { login as loginUser } from "../services/authService";
 import { NotebookPen } from "lucide-react";
-
+import { useAuth } from "../context/AuthContext";
 
 function Login() {
-
-
+    const { login } = useAuth();
   const navigate = useNavigate();
 
-
-  const [formData,setFormData] = useState({
-    email:"",
-    password:""
+  const [formData, setFormData] = useState({
+    email: "",
+    password: "",
   });
 
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const [error,setError] = useState("");
-  const [loading,setLoading] = useState(false);
-
-
-
-  const handleChange = (e)=>{
-
+  const handleChange = (e) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.value
+      [e.target.name]: e.target.value,
     });
-
   };
 
-
-
-  const handleSubmit = async(e)=>{
-
+  const handleSubmit = async (e) => {
     e.preventDefault();
 
-
-    try{
-
+    try {
       setLoading(true);
       setError("");
 
+      const response = await loginUser(formData);
 
-      const response = await login(formData);
-
-
-      localStorage.setItem(
-        "token",
-        response.token
-      );
-
+      login(response.data.token);
 
       navigate("/dashboard");
-
-
-    }catch(error){
-
-      setError(
-        error.response?.data?.message ||
-        "Login failed"
-      );
-
-    }finally{
-
+    } catch (error) {
+      setError(error.response?.data?.message || "Login failed");
+    } finally {
       setLoading(false);
-
     }
-
   };
 
-
-
   return (
-
-<div className="min-h-screen bg-gradient-to-r from-slate-950 via-indigo-950 to-slate-900 flex items-center justify-center px-6">
-
+    <div className="min-h-screen bg-gradient-to-r from-slate-950 via-indigo-950 to-slate-900 flex items-center justify-center px-6">
       <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-8">
-
-
         <div className="flex justify-center items-center gap-2">
+          <NotebookPen className="text-indigo-400" />
 
-          <NotebookPen className="text-indigo-400"/>
-
-          <h1 className="text-2xl font-bold text-white">
-            DailyPlanner
-          </h1>
-
+          <h1 className="text-2xl font-bold text-white">DailyPlanner</h1>
         </div>
-
 
         <h2 className="text-3xl text-white font-bold text-center mt-8">
           Welcome Back
         </h2>
 
-
         <p className="text-slate-400 text-center mt-3">
           Login to manage your tasks
         </p>
 
+        {error && <p className="text-red-400 text-center mt-5">{error}</p>}
 
-        {
-          error &&
-          <p className="text-red-400 text-center mt-5">
-            {error}
-          </p>
-        }
-
-
-
-        <form
-          onSubmit={handleSubmit}
-          className="mt-8 space-y-5"
-        >
-
-
+        <form onSubmit={handleSubmit} className="mt-8 space-y-5">
           <input
             type="email"
             name="email"
@@ -124,8 +71,6 @@ function Login() {
             className="w-full bg-slate-800 text-white px-4 py-3 rounded-xl outline-none"
           />
 
-
-
           <input
             type="password"
             name="password"
@@ -134,49 +79,31 @@ function Login() {
             onChange={handleChange}
             className="w-full bg-slate-800 text-white px-4 py-3 rounded-xl outline-none"
           />
-
-
-
+        <div className="text-right">
+            <Link
+                to="/forgot-password"
+                className="text-sm text-indigo-400 hover:text-indigo-300"
+            >
+                Forgot Password?
+            </Link>
+        </div>
           <button
             disabled={loading}
             className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl font-semibold transition"
           >
-
-            {
-              loading
-              ? "Logging in..."
-              : "Sign In"
-            }
-
+            {loading ? "Logging in..." : "Sign In"}
           </button>
-
-
         </form>
 
-
-
         <p className="text-slate-400 text-center mt-6">
-
           Don't have an account?
-
-          <Link
-            to="/register"
-            className="text-indigo-400 ml-2"
-          >
+          <Link to="/register" className="text-indigo-400 ml-2">
             Register
           </Link>
-
         </p>
-
-
       </div>
-
-
     </div>
-
   );
-
 }
-
 
 export default Login;
