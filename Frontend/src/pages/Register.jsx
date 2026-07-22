@@ -1,98 +1,177 @@
 import { useState } from "react";
-import api from "../api/axios";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { register } from "../services/authService";
+import { NotebookPen } from "lucide-react";
+
 
 function Register() {
 
-    const navigate = useNavigate();
+  const navigate = useNavigate();
 
-    const [formData, setFormData] = useState({
-        name: "",
-        email: "",
-        password: ""
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+  });
+
+
+  const [error, setError] = useState("");
+  const [loading, setLoading] = useState(false);
+
+
+  const handleChange = (e) => {
+
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
     });
 
-
-    const handleChange = (e) => {
-        setFormData({
-            ...formData,
-            [e.target.name]: e.target.value
-        });
-    };
+  };
 
 
-    const handleSubmit = async (e) => {
+  const handleSubmit = async (e) => {
 
-        e.preventDefault();
+    e.preventDefault();
 
-        try {
+    try {
 
-            await api.post("/auth/register", formData);
+      setLoading(true);
+      setError("");
 
-            alert("Registration successful");
+      await register(formData);
 
-            navigate("/login");
-
-        } catch(error) {
-
-            alert(error.response?.data?.message || "Registration failed");
-
-        }
-    };
+      navigate("/login");
 
 
-    return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    } catch(error) {
 
-            <form 
-                onSubmit={handleSubmit}
-                className="bg-white p-8 rounded-xl shadow-md w-96"
-            >
+      setError(
+        error.response?.data?.message ||
+        "Registration failed"
+      );
 
-                <h1 className="text-3xl font-bold mb-6 text-center">
-                    Register
-                </h1>
+    } finally {
 
+      setLoading(false);
 
-                <input
-                    name="name"
-                    placeholder="Name"
-                    value={formData.name}
-                    onChange={handleChange}
-                    className="w-full p-3 border rounded mb-3"
-                />
+    }
+
+  };
 
 
-                <input
-                    name="email"
-                    placeholder="Email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    className="w-full p-3 border rounded mb-3"
-                />
+  return (
+
+<div className="min-h-screen bg-gradient-to-r from-slate-950 via-indigo-950 to-slate-900 flex items-center justify-center px-6">
+
+    <div className="w-full max-w-md bg-slate-900 border border-slate-800 rounded-3xl p-8">
 
 
-                <input
-                    name="password"
-                    type="password"
-                    placeholder="Password"
-                    value={formData.password}
-                    onChange={handleChange}
-                    className="w-full p-3 border rounded mb-4"
-                />
+        <div className="flex justify-center items-center gap-2">
 
+          <NotebookPen className="text-indigo-400"/>
 
-                <button
-                    className="w-full bg-blue-500 text-white p-3 rounded hover:bg-blue-600"
-                >
-                    Register
-                </button>
-
-
-            </form>
+          <h1 className="text-2xl font-bold text-white">
+            DailyPlanner
+          </h1>
 
         </div>
-    );
+
+
+        <h2 className="text-3xl font-bold text-white text-center mt-8">
+          Create Account
+        </h2>
+
+
+        <p className="text-slate-400 text-center mt-3">
+          Start organizing your day
+        </p>
+
+
+        {
+          error && (
+            <p className="text-red-400 text-center mt-5">
+              {error}
+            </p>
+          )
+        }
+
+
+
+        <form
+          onSubmit={handleSubmit}
+          className="mt-8 space-y-5"
+        >
+
+
+          <input
+            type="text"
+            name="name"
+            placeholder="Full Name"
+            value={formData.name}
+            onChange={handleChange}
+            className="w-full bg-slate-800 text-white px-4 py-3 rounded-xl outline-none"
+          />
+
+
+          <input
+            type="email"
+            name="email"
+            placeholder="Email Address"
+            value={formData.email}
+            onChange={handleChange}
+            className="w-full bg-slate-800 text-white px-4 py-3 rounded-xl outline-none"
+          />
+
+
+          <input
+            type="password"
+            name="password"
+            placeholder="Password"
+            value={formData.password}
+            onChange={handleChange}
+            className="w-full bg-slate-800 text-white px-4 py-3 rounded-xl outline-none"
+          />
+
+
+          <button
+            disabled={loading}
+            className="w-full bg-indigo-600 hover:bg-indigo-500 text-white py-3 rounded-xl font-semibold transition"
+          >
+
+            {
+              loading
+              ? "Creating..."
+              : "Create Account"
+            }
+
+          </button>
+
+
+        </form>
+
+
+
+        <p className="text-slate-400 text-center mt-6">
+
+          Already have an account?
+
+          <Link
+            to="/login"
+            className="text-indigo-400 ml-2"
+          >
+            Sign In
+          </Link>
+
+        </p>
+
+
+    </div>
+
+
+</div>
+
+  );
 }
+
 
 export default Register;
